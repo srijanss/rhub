@@ -1,0 +1,10 @@
+{% extends 'webapp/base.html' %}
+<br>{% block container %}
+<h1>{{ restaurant }}</h1>
+<i>{{ restaurant.types.all|join:", " }}</i>
+
+<p>{{ restaurant.description }}</p>
+<p>Contact</p>
+<p>Telephone: <i>{{ restaurant.telephone }}</i></p>
+<p>Website: <i>{{ restaurant.website }}</i></p>
+<a class="book_table_link" href="#">Book Table</a> {% endblock container %}

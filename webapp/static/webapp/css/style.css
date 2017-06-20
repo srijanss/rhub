@@ -1,0 +1,63 @@
+html {
+    background-color: white;
+}
+
+body {
+    width: 100%;
+}
+
+html,
+body {
+    margin: 0;
+}
+
+header {
+    height: 50px;
+}
+
+header,
+footer {
+    background-color: #e9e9e9;
+}
+
+.container {
+    display: block;
+    width: 600px;
+    height: 800px;
+    margin: 20px auto;
+}
+
+footer {
+    height: 200px;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+
+a {
+    text-decoration: none;
+    color: #62a5a1;
+}
+
+ul {
+    list-style: none;
+}
+
+.book_table_link {
+    display: block;
+    background-color: #e9e9e9;
+    padding: 10px 10px;
+    width: 80px;
+    height: 20px;
+    font-weight: bold;
+}
+
+.row {
+    display: block;
+    margin: 10px auto 50px;
+}
+
+.navbar {
+    display: block;
+    float: left;
+}
