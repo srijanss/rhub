@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+from django.db.models import Q
 
 from .models import Restaurant
 
@@ -20,5 +21,5 @@ def detail(request, restaurant_id):
 
 def search(request):
     search_text = request.POST['search_field']
-    restaurant_list = [restaurant for restaurant in Restaurant.objects.all() if search_text.lower() in restaurant.name.lower() ]
+    restaurant_list = Restaurant.objects.filter(Q(name__icontains=search_text) | Q(types__name__icontains=search_text)).distinct()
     return render(request, 'webapp/search_result.html', {'search_list':restaurant_list})
