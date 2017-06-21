@@ -1,5 +1,5 @@
 {% extends 'webapp/base.html' %}
-<br>{% block container %}
+<br>{% block content %}
 <h1>{{ restaurant }}</h1>
 <i>{{ restaurant.types.all|join:", " }}</i>
 
@@ -7,4 +7,4 @@
 <p>Contact</p>
 <p>Telephone: <i>{{ restaurant.telephone }}</i></p>
 <p>Website: <i>{{ restaurant.website }}</i></p>
-<a class="book_table_link" href="#">Book Table</a> {% endblock container %}
+<a class="book_table_link" href="#">Book Table</a> {% endblock content %}

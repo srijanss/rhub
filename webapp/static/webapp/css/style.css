@@ -47,12 +47,12 @@ ul {
     display: block;
     background-color: #e9e9e9;
     padding: 10px 10px;
+    font-weight: bold;
     width: 80px;
     height: 20px;
-    font-weight: bold;
 }
 
-.row {
+.content_row {
     display: block;
     margin: 10px auto 50px;
 }
@@ -60,4 +60,19 @@ ul {
 .navbar {
     display: block;
     float: left;
+}
+
+#search_bar {
+    display: block;
+    margin: 10px auto;
+}
+
+#search_field {
+    width: 500px;
+    height: 30px;
+}
+
+#search_btn {
+    height: 35px;
+    width: auto;
 }

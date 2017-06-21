@@ -19,7 +19,16 @@
         </div>
     </header>
     <div class="container">
-        {% block search_bar %}{% endblock %} {% block container %}{% endblock %}
+        <div id="search_bar">
+            <form action="{% url 'webapp:search' %}" method="post">
+                {% csrf_token %}
+                <input type="text" id="search_field" name="search_field" value="" placeholder="Search Anything" />
+                <input type="submit" id="search_btn" name="search_btn" value="Search" />
+            </form>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
     </div>
     <footer>
     </footer>
