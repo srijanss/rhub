@@ -11,27 +11,29 @@
 </head>
 
 <body>
-    <header>
-        <div class="navbar">
-            <ul>
-                <li><a href={% url 'webapp:index' %}>Home</a></li>
-            </ul>
+    <div id="wrapper">
+        <header>
+            <div class="navbar">
+                <ul>
+                    <li><a href={% url 'webapp:index' %}>Home</a></li>
+                </ul>
+            </div>
+        </header>
+        <div class="container">
+            <div id="search_bar">
+                <form action="{% url 'webapp:search' %}" method="post">
+                    {% csrf_token %}
+                    <input type="text" id="search_field" name="search_field" value="" placeholder="Search Anything" />
+                    <input type="submit" id="search_btn" name="search_btn" value="Search" />
+                </form>
+            </div>
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
         </div>
-    </header>
-    <div class="container">
-        <div id="search_bar">
-            <form action="{% url 'webapp:search' %}" method="post">
-                {% csrf_token %}
-                <input type="text" id="search_field" name="search_field" value="" placeholder="Search Anything" />
-                <input type="submit" id="search_btn" name="search_btn" value="Search" />
-            </form>
-        </div>
-        <div class="content">
-            {% block content %}{% endblock %}
-        </div>
+        <footer>
+        </footer>
     </div>
-    <footer>
-    </footer>
 </body>
 
 </html>
