@@ -9,7 +9,6 @@ from django.db.models import Q
 
 from .models import Restaurant
 
-# Create your views here.
 def index(request):
     restaurant_list = Restaurant.objects.order_by('-created_at') [:5]
     context = { 'restaurant_list': restaurant_list }
