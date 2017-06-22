@@ -1,0 +1,9 @@
+{% extends "webapp/base.html" %} {% block content %} {% if form.instance.pk %}
+<form action="{% url 'webapp:restaurant_update' restaurant_id %}" method="post">
+    {% else %}
+    <form action="{% url 'webapp:restaurant_create' %}" method="post">
+        {% endif %} {% csrf_token %} {{ form.as_p }}
+        <input type="submit" name="save_btn" value="Save" /> {% if form.instance.pk %}
+        <input type="submit" name="delete_btn" value="Delete" /> {% endif %}
+    </form>
+    {% endblock content %}

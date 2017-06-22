@@ -66,6 +66,11 @@ ul {
     float: left;
 }
 
+.navbar li {
+    display: inline;
+    margin: auto 10px;
+}
+
 #search_bar {
     display: block;
     margin: 10px auto;

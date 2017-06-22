@@ -2,9 +2,13 @@
 <br>{% block content %}
 <h1>{{ restaurant }}</h1>
 <i>{{ restaurant.types.all|join:", " }}</i>
+<p><i>Cuisines : {{ restaurant.cuisines.all|join:", "}}</i></p>
 
 <p>{{ restaurant.description }}</p>
-<p>Contact</p>
-<p>Telephone: <i>{{ restaurant.telephone }}</i></p>
-<p>Website: <i>{{ restaurant.website }}</i></p>
-<a class="book_table_link" href="#">Book Table</a> {% endblock content %}
+<p>Contact
+    <br><i>Telephone: {{ restaurant.telephone }}</i>
+    <br><i>Website: {{ restaurant.website }}</i>
+</p>
+<p><a class="book_table_link" href="#">Book Table</a></p>
+
+<p><a class="edit_link" href="{% url 'webapp:restaurant_update' restaurant.id %}">Edit</a></p> {% endblock content %}

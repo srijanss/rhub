@@ -8,4 +8,7 @@ urlpatterns = [
     url(r'^restaurant/$', views.index, name="index"),
     url(r'^restaurant/(?P<restaurant_id>[0-9]+)/$', views.detail, name="detail"),
     url(r'^restaurant/search/$', views.search, name='search'),
+    url(r'^restaurant/create/$', views.restaurant_create, name='restaurant_create'),
+    url(r'^restaurant/update/(?P<restaurant_id>[0-9]+)/$', views.restaurant_update, name='restaurant_update'),
+    # url(r'^restaurant/delete/(?P<restaurant_id>[0-9]+)/$', views.restaurant_delete, name='restaurant_delete'),
 ]
