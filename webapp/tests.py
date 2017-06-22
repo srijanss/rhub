@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.urls import reverse
 from django.test import TestCase
 
-from .models import Restaurant, Type
+from .models import Restaurant, Type, Cuisine, Food
 
 
 class RestaurantModelTests(TestCase):
@@ -26,10 +26,32 @@ class TypeModelTests(TestCase):
         Type object created must return true for isinstance() and
         __str__() must be equal to restaurant's type 
         """
-        restaurant_type = Type(name="Test Restaurant Type")
+        restaurant_type = Type.objects.create(name="Test Restaurant Type")
         self.assertIs(isinstance(restaurant_type, Type), True)
         self.assertEqual(restaurant_type.__str__(), restaurant_type.name)
 
+class CuisineModelTests(TestCase):
+    
+    def test_cuisine_object_creation(self):
+        """
+        Cuisine object created must return true for isinstance() and
+        __str__() must be equal to cuisine name 
+        """
+        cuisine = Cuisine.objects.create(name="Test Cuisine")
+        self.assertIs(isinstance(cuisine, Cuisine), True)
+        self.assertEqual(cuisine.__str__(), cuisine.name)
+ 
+class FoodModelTests(TestCase):
+        
+    def test_food_object_creation(self):
+        """
+        Food object created must return true for isinstance() and
+        __str__() must be equal to food name 
+        """
+        cuisine = Cuisine.objects.create(name="Test Cuisine")
+        food = Food.objects.create(name="Test Food", cuisine_id=cuisine.id)
+        self.assertIs(isinstance(food, Food), True)
+        self.assertEqual(food.__str__(), food.name)
 
 class IndexViewTests(TestCase):
 
