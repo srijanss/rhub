@@ -30,8 +30,9 @@ class TypeModelTests(TestCase):
         self.assertIs(isinstance(restaurant_type, Type), True)
         self.assertEqual(restaurant_type.__str__(), restaurant_type.name)
 
+
 class CuisineModelTests(TestCase):
-    
+
     def test_cuisine_object_creation(self):
         """
         Cuisine object created must return true for isinstance() and
@@ -40,9 +41,10 @@ class CuisineModelTests(TestCase):
         cuisine = Cuisine.objects.create(name="Test Cuisine")
         self.assertIs(isinstance(cuisine, Cuisine), True)
         self.assertEqual(cuisine.__str__(), cuisine.name)
- 
+
+
 class FoodModelTests(TestCase):
-        
+
     def test_food_object_creation(self):
         """
         Food object created must return true for isinstance() and
@@ -52,6 +54,7 @@ class FoodModelTests(TestCase):
         food = Food.objects.create(name="Test Food", cuisine_id=cuisine.id)
         self.assertIs(isinstance(food, Food), True)
         self.assertEqual(food.__str__(), food.name)
+
 
 class IndexViewTests(TestCase):
 
@@ -81,29 +84,34 @@ class IndexViewTests(TestCase):
                                      '<Restaurant: Test Restaurant 1>']
                                  )
 
+
 class DetailViewTests(TestCase):
-    
+
     def test_no_restaurant(self):
         """ If restaurant with given id is not found 404 error should be raise 
         """
         response = self.client.get(reverse('webapp:detail', args=(1,)))
         self.assertEqual(response.status_code, 404)
-    
+
     def test_with_restaurant(self):
         """ If restaurant exists restaurant details must shown in detail page
         """
         restaurant = create_restaurant("Test Restaurant")
-        response = self.client.get(reverse('webapp:detail', args=(restaurant.id,)))
-        self.assertEqual(response.context['restaurant'].name, 'Test Restaurant')
+        response = self.client.get(
+            reverse('webapp:detail', args=(restaurant.id,)))
+        self.assertEqual(
+            response.context['restaurant'].name, 'Test Restaurant')
+
 
 class SearchViewTests(TestCase):
-    
+
     def test_no_matching_content(self):
         """ If search content doesnot match the restaurant name or type 
         or restaurant doesnot exists, appropriate message should be shown
         """
         search_text = "test"
-        response = self.client.post(reverse('webapp:search'), {'search_field':search_text})
+        response = self.client.post(reverse('webapp:search'), {
+                                    'search_field': search_text})
         self.assertEqual(response.status_code, 200)
         self.assertQuerysetEqual(response.context['search_list'], [])
 
@@ -113,9 +121,11 @@ class SearchViewTests(TestCase):
         """
         create_restaurant("Test Restaurant")
         search_text = "test"
-        response = self.client.post(reverse('webapp:search'), {'search_field':search_text})
+        response = self.client.post(reverse('webapp:search'), {
+                                    'search_field': search_text})
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Test Restaurant>'])
+        self.assertQuerysetEqual(response.context['search_list'], [
+                                 '<Restaurant: Test Restaurant>'])
 
     def test_type_matching_with_search_text(self):
         """ If search content match with the restaurant type
@@ -124,9 +134,11 @@ class SearchViewTests(TestCase):
         restaurant = create_restaurant("Test Restaurant")
         restaurant.types.create(name="Diner")
         search_text = "diner"
-        response = self.client.post(reverse('webapp:search'), {'search_field':search_text})
+        response = self.client.post(reverse('webapp:search'), {
+                                    'search_field': search_text})
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Test Restaurant>'])
+        self.assertQuerysetEqual(response.context['search_list'], [
+                                 '<Restaurant: Test Restaurant>'])
 
     def test_name_and_type_matching_with_search_text(self):
         """ If search content matches the restaurant name and type 
@@ -135,9 +147,61 @@ class SearchViewTests(TestCase):
         restaurant = create_restaurant("Diner Restaurant")
         restaurant.types.create(name="Diner")
         search_text = "diner"
-        response = self.client.post(reverse('webapp:search'), {'search_field':search_text})
+        response = self.client.post(reverse('webapp:search'), {
+                                    'search_field': search_text})
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Diner Restaurant>'])
+        self.assertQuerysetEqual(response.context['search_list'], [
+                                 '<Restaurant: Diner Restaurant>'])
+
+
+class RestaurantCreateViewTests(TestCase):
+
+    def test_view_loads(self):
+        """ View should be loaded for GET request
+        """
+        response = self.client.get(reverse('webapp:restaurant_create'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'webapp/restaurant_form.html')
+
+    def test_view_fails_blank(self):
+        """ Validation error should be shown if posted with blank data
+        """
+        response = self.client.post(reverse('webapp:restaurant_create'), {})
+        self.assertFormError(response, 'form', 'name', 'This field is required.')
+
+    def test_view_fails_invalid(self):
+        """ Validation error should be shown if invalid data is posted
+        """
+        self.credentials = {
+            'name': 'test',
+            'description': 'test',
+            'state': 'test',
+            'city': 'test',
+            'street': 'test',
+            'longitude': 'error',
+            'latitude': 0.000111,
+            'telephone': '1234567890',
+            'website': 'http://test.com'
+        }
+        response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
+        self.assertFormError(response, 'form', 'longitude', 'Enter a number.')
+
+    def test_view_valid_post(self):
+        """ If there is no validation error then it should redirect to restaurant's detail page
+        """
+        self.credentials = {
+            'name': 'test',
+            'description': 'test',
+            'state': 'test',
+            'city': 'test',
+            'street': 'test',
+            'longitude': 0.000111,
+            'latitude': 0.000111,
+            'telephone': '1234567890',
+            'website': 'http://test.com'
+        }
+        response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
+        self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
 
 
 # Helper functions
