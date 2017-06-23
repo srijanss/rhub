@@ -20,8 +20,8 @@
                 </ul>
             </div>
         </header>
+        <div id="overlay"></div>
         <div class="container">
-            <div id="overlay"></div>
             <div id="search_bar">
                 <form action="{% url 'webapp:search' %}" method="post">
                     {% csrf_token %}
@@ -36,9 +36,8 @@
         <footer>
         </footer>
     </div>
-    {% comment %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="{% static 'webapp/js/scripts.js' %}"></script>
-</body>{% endcomment %}
+</body>
 
 </html>
