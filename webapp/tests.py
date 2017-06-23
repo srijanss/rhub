@@ -4,8 +4,21 @@ from __future__ import unicode_literals
 from django.urls import reverse
 from django.test import TestCase
 
+import copy
+
 from .models import Restaurant, Type, Cuisine, Food
 
+CREDENTIIALS = {
+            'name': 'test',
+            'description': 'test',
+            'state': 'test',
+            'city': 'test',
+            'street': 'test',
+            'longitude': 0.000111,
+            'latitude': 0.000111,
+            'telephone': '1234567890',
+            'website': 'http://test.com'
+        }
 
 class RestaurantModelTests(TestCase):
 
@@ -172,37 +185,56 @@ class RestaurantCreateViewTests(TestCase):
     def test_view_fails_invalid(self):
         """ Validation error should be shown if invalid data is posted
         """
-        self.credentials = {
-            'name': 'test',
-            'description': 'test',
-            'state': 'test',
-            'city': 'test',
-            'street': 'test',
-            'longitude': 'error',
-            'latitude': 0.000111,
-            'telephone': '1234567890',
-            'website': 'http://test.com'
-        }
+        self.credentials = CREDENTIIALS.copy()
+        self.credentials['longitude'] = 'error'
         response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
         self.assertFormError(response, 'form', 'longitude', 'Enter a number.')
 
     def test_view_valid_post(self):
         """ If there is no validation error then it should redirect to restaurant's detail page
         """
-        self.credentials = {
-            'name': 'test',
-            'description': 'test',
-            'state': 'test',
-            'city': 'test',
-            'street': 'test',
-            'longitude': 0.000111,
-            'latitude': 0.000111,
-            'telephone': '1234567890',
-            'website': 'http://test.com'
-        }
-        response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
+        response = self.client.post(reverse('webapp:restaurant_create'), CREDENTIIALS)
         self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
 
+class RestaurantUpdateViewTests(TestCase):
+    
+    def test_no_restaurant(self):
+        """ If restaurant with given id is not found 404 error should be raise 
+        """
+        response = self.client.post(reverse('webapp:restaurant_update', args=(1,)))
+        self.assertEqual(response.status_code, 404)
+    
+    def test_view_loads(self):
+        """ View loaded with data related to restaurant should be loaded for GET request
+        """
+        restaurant = create_restaurant("Test Restaurant")
+        response = self.client.get(reverse('webapp:restaurant_update', args=(restaurant.id,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'webapp/restaurant_form.html')
+
+    def test_view_fails_invalid(self):
+        """ Validation error in updating should be shown if invalid data is posted
+        """
+        restaurant = create_restaurant("Test Restaurant")
+        self.credentials = CREDENTIIALS.copy() 
+        self.credentials['longitude'] = 'error'
+        response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), self.credentials)
+        self.assertFormError(response, 'form', 'longitude', 'Enter a number.')
+
+    def test_view_valid_post(self):
+        """ If there is no validation error then it should redirect to restaurant's detail page
+        """
+        restaurant = create_restaurant("Test Restaurant")
+        response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), CREDENTIIALS)
+        self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
+
+    def test_view_delete_restaurant(self):
+        """ If there is delete_btn in POST request submission the restaurant object
+        should be deleted and page must be redirected to index page"
+        """
+        restaurant = create_restaurant("Test Restaurant")
+        response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), {'delete_btn':'delete_btn'})
+        self.assertRedirects(response, reverse('webapp:index'))
 
 # Helper functions
 def create_restaurant(restaurant_name):
