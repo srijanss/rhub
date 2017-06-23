@@ -1,0 +1,7 @@
+<div id="popupform">
+    <h3>Add {{ field }}</h3>
+    <form action="/restaurant/{{ field }}/create/" method="post">{% csrf_token %} {{ form.as_p }}
+        <input type="submit" value="Save" onclick="overlay();" />
+        <input type="button" value="Cancel" onclick="overlay();" />
+    </form>
+</div>

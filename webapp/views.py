@@ -2,13 +2,13 @@
 from __future__ import unicode_literals
 
 from django.http import Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
 
-from .models import Restaurant
-from .forms import RestaurantForm
+from .models import Restaurant, Cuisine, Type
+from .forms import RestaurantForm, CuisineForm, TypeForm
 
 def index(request):
     restaurant_list = Restaurant.objects.order_by('-created_at') [:5]
@@ -50,3 +50,21 @@ def restaurant_update(request, restaurant_id):
         form = RestaurantForm(instance=restaurant)
     
     return render(request, 'webapp/restaurant_form.html', {'form':form, 'restaurant_id': restaurant_id})
+
+def handle_popup_form(request, PopUpForm, field):
+    if request.method == 'POST':
+        form = PopUpForm(request.POST)
+        if form.is_valid():
+            new_object = form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        form = PopUpForm()
+    
+    context = {'form':form, 'field':field}
+    return render(request, 'webapp/popup_form.html', context=context)
+
+def cuisine_create(request):
+    return handle_popup_form(request, CuisineForm, 'cuisines')
+
+def type_create(request):
+    return handle_popup_form(request, TypeForm, 'types')
