@@ -34,8 +34,8 @@ class Restaurant(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     telephone = models.CharField(max_length=100)
     website = models.URLField()
-    types = models.ManyToManyField(Type, blank=True)
-    cuisines = models.ManyToManyField(Cuisine, blank=True)
+    types = models.ManyToManyField(Type)
+    cuisines = models.ManyToManyField(Cuisine)
     created_at = models.DateTimeField('created date', auto_now_add=True)
     updated_at = models.DateTimeField('last modified', auto_now=True)
 

@@ -193,7 +193,12 @@ class RestaurantCreateViewTests(TestCase):
     def test_view_valid_post(self):
         """ If there is no validation error then it should redirect to restaurant's detail page
         """
-        response = self.client.post(reverse('webapp:restaurant_create'), CREDENTIIALS)
+        type1 = Type.objects.create(name="test")
+        cuisine1 = Cuisine.objects.create(name="test")
+        self.credentials = CREDENTIIALS.copy()
+        self.credentials["types"] = [type1.id]
+        self.credentials["cuisines"] = [cuisine1.id]
+        response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
         self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
 
 class RestaurantUpdateViewTests(TestCase):
@@ -224,8 +229,13 @@ class RestaurantUpdateViewTests(TestCase):
     def test_view_valid_post(self):
         """ If there is no validation error then it should redirect to restaurant's detail page
         """
+        type1 = Type.objects.create(name="test")
+        cuisine1 = Cuisine.objects.create(name="test")
+        self.credentials = CREDENTIIALS.copy()
+        self.credentials["types"] = [type1.id]
+        self.credentials["cuisines"] = [cuisine1.id]
         restaurant = create_restaurant("Test Restaurant")
-        response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), CREDENTIIALS)
+        response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), self.credentials)
         self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
 
     def test_view_delete_restaurant(self):
