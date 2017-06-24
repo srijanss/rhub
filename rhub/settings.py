@@ -121,6 +121,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/restaurant/'
+
 import dj_database_url
 
 DATABASES['default'] = dj_database_url.config()

@@ -16,10 +16,20 @@
             <div class="navbar">
                 <ul>
                     <li><a href={% url 'webapp:index' %}>Home</a></li>
+                    {% if user.is_authenticated %} {% if 'webapp.add_restaurant' in perms %}
                     <li><a href={% url 'webapp:restaurant_create' %}>Add Restaurant</a></li>
+                    {% endif %}
+                    <li><a href={% url 'logout' %}>Logout</a></li>{% endif %} {% if not user.is_authenticated %}
+                    <li><a href={% url 'login' %}>Login</a></li>
+                    <li><a href={% url 'register_user' %}>Register</a></li>{% endif %}
                 </ul>
             </div>
         </header>
+        {% if user.is_authenticated %}
+        <div id="user_info">
+            <p><i>Logged in as {{ user.username }}</i></p>
+        </div>
+        {% endif %}
         <div id="overlay"></div>
         <div class="container">
             <div id="search_bar">

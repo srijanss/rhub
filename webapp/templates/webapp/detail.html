@@ -11,4 +11,5 @@
 </p>
 <p><a class="book_table_link" href="#">Book Table</a></p>
 
-<p><a class="edit_link" href="{% url 'webapp:restaurant_update' restaurant.id %}">Edit</a></p> {% endblock content %}
+{% if 'webapp.change_restaurant' in perms %}
+<p><a class="edit_link" href="{% url 'webapp:restaurant_update' restaurant.id %}">Edit</a></p> {% endif %} {% endblock content %}

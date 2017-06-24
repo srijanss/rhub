@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 
 from django.template.loader import render_to_string
 from django.forms import ModelForm, SelectMultiple, ModelMultipleChoiceField
+from django.forms import CharField, EmailField
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 from .models import Restaurant, Type, Cuisine, Food
 
@@ -35,3 +38,11 @@ class FoodForm(ModelForm):
         model = Food 
         fields = ['name']
 
+class SignUpForm(UserCreationForm):
+    first_name = CharField(max_length=50, required=False, help_text='Optional')
+    last_name = CharField(max_length=50, required=False, help_text='Optional')
+    email = EmailField(max_length=254, help_text='Required Valid Email Address.')
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2',)
