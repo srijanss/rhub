@@ -7,7 +7,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
 from .models import Restaurant, Cuisine, Type
 from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm
@@ -80,12 +81,18 @@ def cuisine_create(request):
 def type_create(request):
     return handle_popup_form(request, TypeForm, 'types')
 
-def signup(request, group_id):
+def signup(request, user_type):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             new_user = form.save()
-            new_user.groups.add(Group.objects.get(pk=group_id))
+            grp_obj, created = Group.objects.get_or_create(name=user_type)
+            if created and user_type == 'owner':
+                # Sets owner permissions for restaurant model
+                set_permissions(grp_obj, 'webapp', 'restaurant' )
+                set_permissions(grp_obj, 'webapp', 'type' )
+                set_permissions(grp_obj, 'webapp', 'cuisine' )
+            new_user.groups.add(grp_obj)
             return HttpResponseRedirect(reverse('login'))
     else:
         form = SignUpForm()
@@ -94,7 +101,14 @@ def signup(request, group_id):
     return render(request, 'webapp/registration/signup_form.html', context=context)
 
 def user_create(request):
-    return signup(request, 3)
+    return signup(request, 'customer')
 
 def owner_create(request):
-    return signup(request, 2)
+    return signup(request, 'owner')
+
+def set_permissions(grp_obj, app_name, model_name):
+    content_type = ContentType.objects.get(app_label=app_name, model=model_name)
+    permissions = Permission.objects.filter(content_type=content_type)
+
+    for perms in permissions:
+        grp_obj.permissions.add(perms)
