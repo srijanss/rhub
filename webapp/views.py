@@ -115,3 +115,7 @@ def set_permissions(grp_obj, app_name, model_name):
 
     for perms in permissions:
         grp_obj.permissions.add(perms)
+
+def user_profile(request):
+    restaurant_list = request.user.restaurant_set.all()
+    return render(request, 'webapp/user_profile.html', {'restaurant_list':restaurant_list})

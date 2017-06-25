@@ -1,0 +1,17 @@
+{% extends "webapp/base.html" %} {% block content %}
+<div class="content_row">
+    <h1>{{ user.username }}</h1>
+    {% for restaurant in restaurant_list %}
+    <div class="restaurant_list">
+        <ul>
+            <li>
+                <strong><a href={% url 'webapp:detail' restaurant.id %}>{{ restaurant.name }}</a></strong>
+            </li>
+            <li>
+                <a href={% url 'webapp:restaurant_update' restaurant.id %}>Edit</a>
+            </li>
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

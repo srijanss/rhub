@@ -19,28 +19,31 @@ header {
 
 header,
 footer {
-    background-color: #e9e9e9;
+    /*background-color: #08798b;*/
+    background-color: #0f515f;
 }
 
 .container {
     display: block;
-    width: 600px;
-    margin: 20px auto;
-    padding-bottom: 200px;
+    width: 800px;
+    margin: 0px auto;
+    padding-bottom: 300px;
+    background-color: #e9e9e9;
 }
 
 footer {
     width: 100%;
-    height: 200px;
+    height: 300px;
     position: absolute;
     bottom: 0;
     left: 0;
-    margin-bottom: -20px;
+    margin-bottom: -50px;
 }
 
 a {
     text-decoration: none;
     color: #62a5a1;
+    /*color: white;*/
 }
 
 ul {
@@ -58,7 +61,8 @@ ul {
 
 .content_row {
     display: block;
-    margin: 10px auto 50px;
+    /*margin: 10px auto 0px;*/
+    padding: 10px 95px;
 }
 
 .navbar {
@@ -73,17 +77,41 @@ ul {
 
 #search_bar {
     display: block;
-    margin: 10px auto;
+    width: 100%;
+    height: 100px;
+    background-color: #08798b;
+    /*margin: 20px auto;*/
+    margin-top: -20px;
+    padding-top: 20px;
+}
+
+#search_bar ul {
+    margin-left: -40px;
+}
+
+#search_bar li {
+    display: inline;
 }
 
 #search_field {
-    width: 500px;
+    display: block;
+    width: 800px;
+    height: 30px;
+    margin: auto;
+}
+
+input {
+    display: block;
+    width: 600px;
     height: 30px;
 }
 
 #search_btn {
+    display: block;
     height: 35px;
     width: auto;
+    visibility: hidden;
+    /*margin: -35px auto;*/
 }
 
 #overlay {
@@ -110,5 +138,20 @@ ul {
 
 #user_info {
     display: block;
+    float: right;
+}
+
+#user_info li {
+    display: inline;
+    margin: auto 10px;
+}
+
+.restaurant_list {
+    display: block;
     float: left;
+}
+
+.restaurant_list li {
+    display: inline;
+    margin: auto 30px;
 }

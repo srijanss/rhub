@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^restaurant/update/(?P<restaurant_id>[0-9]+)/$', views.restaurant_update, name='restaurant_update'),
     url(r'^restaurant/types/create/$', views.type_create , name='type_create'),
     url(r'^restaurant/cuisines/create/$', views.cuisine_create , name='cuisine_create'),
+    url(r'^user/profile/$', views.user_profile, name='profile'),
 ]

@@ -1,15 +1,18 @@
 {% extends 'webapp/base.html' %}
 <br>{% block content %}
-<h1>{{ restaurant }}</h1>
-<i>{{ restaurant.types.all|join:", " }}</i>
-<p><i>Cuisines : {{ restaurant.cuisines.all|join:", "}}</i></p>
+<div class="content_row">
+    <h1>{{ restaurant }}</h1>
+    <i>{{ restaurant.types.all|join:", " }}</i>
+    <p><i>Cuisines : {{ restaurant.cuisines.all|join:", "}}</i></p>
 
-<p>{{ restaurant.description }}</p>
-<p>Contact
-    <br><i>Telephone: {{ restaurant.telephone }}</i>
-    <br><i>Website: {{ restaurant.website }}</i>
-</p>
-<p><a class="book_table_link" href="#">Book Table</a></p>
+    <p>{{ restaurant.description }}</p>
+    <p>Contact
+        <br><i>Telephone: {{ restaurant.telephone }}</i>
+        <br><i>Website: {{ restaurant.website }}</i>
+    </p>
+    <p><a class="book_table_link" href="#">Book Table</a></p>
 
-{% if 'webapp.change_restaurant' in perms %}
-<p><a class="edit_link" href="{% url 'webapp:restaurant_update' restaurant.id %}">Edit</a></p> {% endif %} {% endblock content %}
+    {% if 'webapp.change_restaurant' in perms %}
+    <p><a class="edit_link" href="{% url 'webapp:restaurant_update' restaurant.id %}">Edit</a></p> {% endif %}
+</div>
+{% endblock content %}
