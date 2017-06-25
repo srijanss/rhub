@@ -43,20 +43,28 @@ footer {
 a {
     text-decoration: none;
     color: #62a5a1;
-    /*color: white;*/
 }
 
 ul {
     list-style: none;
 }
 
-.book_table_link {
+.book_table_link,
+button {
     display: block;
-    background-color: #e9e9e9;
+    background-color: #0f515f;
     padding: 10px 10px;
     font-weight: bold;
     width: 80px;
+    color: white;
+}
+
+.book_table_link {
     height: 20px;
+}
+
+button {
+    height: 35px;
 }
 
 .content_row {
