@@ -34,6 +34,7 @@ def restaurant_create(request):
         form = RestaurantForm(request.POST)
         if form.is_valid():
             restaurant = form.save()             
+            request.user.restaurant_set.add(restaurant)
             return HttpResponseRedirect(reverse('webapp:detail', args=(restaurant.id,)))
     else:
         form = RestaurantForm()
@@ -43,6 +44,8 @@ def restaurant_create(request):
 @login_required
 @permission_required('webapp.change_restaurant')
 def restaurant_update(request, restaurant_id):
+    if not int(restaurant_id) in [restaurant.id for restaurant in request.user.restaurant_set.all()]:
+        raise Http404('You dont have permission to edit this Restaurant.')
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
     if request.method == 'POST':
         form = RestaurantForm(request.POST, instance=restaurant)
