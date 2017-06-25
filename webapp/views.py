@@ -75,12 +75,12 @@ def handle_popup_form(request, PopUpForm, field):
     return render(request, 'webapp/popup_form.html', context=context)
 
 @login_required
-@permission_required('webapp:add_cuisine')
+@permission_required('webapp.add_cuisine')
 def cuisine_create(request):
     return handle_popup_form(request, CuisineForm, 'cuisines')
 
 @login_required
-@permission_required('webapp:add_type')
+@permission_required('webapp.add_type')
 def type_create(request):
     return handle_popup_form(request, TypeForm, 'types')
 
