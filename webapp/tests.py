@@ -23,6 +23,7 @@ CREDENTIIALS = {
 			'website': 'http://test.com'
 		}
 
+
 class RestaurantModelTests(TestCase):
 
 	def test_restaurant_object_creation(self):
@@ -40,7 +41,7 @@ class TypeModelTests(TestCase):
 	def test_type_object_creation(self):
 		"""
 		Type object created must return true for isinstance() and
-		__str__() must be equal to restaurant's type 
+		__str__() must be equal to restaurant's type
 		"""
 		restaurant_type = Type.objects.create(name="Test Restaurant Type")
 		self.assertIs(isinstance(restaurant_type, Type), True)
@@ -52,7 +53,7 @@ class CuisineModelTests(TestCase):
 	def test_cuisine_object_creation(self):
 		"""
 		Cuisine object created must return true for isinstance() and
-		__str__() must be equal to cuisine name 
+		__str__() must be equal to cuisine name
 		"""
 		cuisine = Cuisine.objects.create(name="Test Cuisine")
 		self.assertIs(isinstance(cuisine, Cuisine), True)
@@ -64,7 +65,7 @@ class FoodModelTests(TestCase):
 	def test_food_object_creation(self):
 		"""
 		Food object created must return true for isinstance() and
-		__str__() must be equal to food name 
+		__str__() must be equal to food name
 		"""
 		cuisine = Cuisine.objects.create(name="Test Cuisine")
 		food = Food.objects.create(name="Test Food", cuisine_id=cuisine.id)
@@ -104,7 +105,7 @@ class IndexViewTests(TestCase):
 class DetailViewTests(TestCase):
 
 	def test_no_restaurant(self):
-		""" If restaurant with given id is not found 404 error should be raise 
+		""" If restaurant with given id is not found 404 error should be raise
 		"""
 		response = self.client.get(reverse('webapp:detail', args=(1,)))
 		self.assertEqual(response.status_code, 404)
@@ -122,7 +123,7 @@ class DetailViewTests(TestCase):
 class SearchViewTests(TestCase):
 
 	def test_no_matching_content(self):
-		""" If search content doesnot match the restaurant name or type 
+		""" If search content doesnot match the restaurant name or type
 		or restaurant doesnot exists, appropriate message should be shown
 		"""
 		search_text = "test"
@@ -157,7 +158,7 @@ class SearchViewTests(TestCase):
 								 '<Restaurant: Test Restaurant>'])
 
 	def test_name_and_type_matching_with_search_text(self):
-		""" If search content matches the restaurant name and type 
+		""" If search content matches the restaurant name and type
 		only one result of the matching restaurant should be shown
 		"""
 		restaurant = create_restaurant("Diner Restaurant")
@@ -175,7 +176,7 @@ class RestaurantCreateViewTests(TestCase):
 	def test_view_loads(self):
 		""" View should be loaded for GET request
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		response = self.client.get(reverse('webapp:restaurant_create'))
 		self.assertEqual(response.status_code, 200)
@@ -184,7 +185,7 @@ class RestaurantCreateViewTests(TestCase):
 	def test_view_fails_blank(self):
 		""" Validation error should be shown if posted with blank data
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		response = self.client.post(reverse('webapp:restaurant_create'), {})
 		self.assertFormError(response, 'form', 'name', 'This field is required.')
@@ -192,63 +193,68 @@ class RestaurantCreateViewTests(TestCase):
 	def test_view_fails_invalid(self):
 		""" Validation error should be shown if invalid data is posted
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		self.credentials = CREDENTIIALS.copy()
 		self.credentials['longitude'] = 'error'
-		response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
+		response = self.client.post(
+		    reverse('webapp:restaurant_create'), self.credentials)
 		self.assertFormError(response, 'form', 'longitude', 'Enter a number.')
 
 	def test_view_valid_post(self):
 		""" If there is no validation error then it should redirect to restaurant's detail page
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		type1 = Type.objects.create(name="test")
 		cuisine1 = Cuisine.objects.create(name="test")
 		self.credentials = CREDENTIIALS.copy()
 		self.credentials["types"] = [type1.id]
 		self.credentials["cuisines"] = [cuisine1.id]
-		response = self.client.post(reverse('webapp:restaurant_create'), self.credentials)
+		response = self.client.post(
+		    reverse('webapp:restaurant_create'), self.credentials)
 		self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
 
+
 class RestaurantUpdateViewTests(TestCase):
-	
+
 	def test_no_restaurant(self):
-		""" If restaurant with given id is not found 404 error should be raise 
+		""" If restaurant with given id is not found 404 error should be raise
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		response = self.client.post(reverse('webapp:restaurant_update', args=(1,)))
 		self.assertEqual(response.status_code, 404)
-	
+
 	def test_view_loads(self):
 		""" View loaded with data related to restaurant should be loaded for GET request
 		"""
-		owner = create_owner('Test User','test@example.com', 'testpwd')
+		owner = create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		restaurant = create_restaurant("Test Restaurant")
 		restaurant.users.add(owner)
-		response = self.client.get(reverse('webapp:restaurant_update', args=(restaurant.id,)))
+		response = self.client.get(
+		    reverse('webapp:restaurant_update', args=(restaurant.id,)))
 		self.assertEqual(response.status_code, 200)
 		self.assertTemplateUsed(response, 'webapp/restaurant_form.html')
 
 	def test_view_fails_invalid(self):
 		""" Validation error in updating should be shown if invalid data is posted
 		"""
-		owner = create_owner('Test User','test@example.com', 'testpwd')
+		owner = create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		restaurant = create_restaurant("Test Restaurant")
 		restaurant.users.add(owner)
-		self.credentials = CREDENTIIALS.copy() 
+		self.credentials = CREDENTIIALS.copy()
 		self.credentials['longitude'] = 'error'
-		response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), self.credentials)
+		response = self.client.post(
+		    reverse('webapp:restaurant_update', args=(restaurant.id,)), self.credentials)
 		self.assertFormError(response, 'form', 'longitude', 'Enter a number.')
 
 	def test_view_valid_post(self):
 		""" If there is no validation error then it should redirect to restaurant's detail page
 		"""
-		owner = create_owner('Test User','test@example.com', 'testpwd')
+		owner = create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		type1 = Type.objects.create(name="test")
 		cuisine1 = Cuisine.objects.create(name="test")
@@ -257,27 +263,30 @@ class RestaurantUpdateViewTests(TestCase):
 		self.credentials["cuisines"] = [cuisine1.id]
 		restaurant = create_restaurant("Test Restaurant")
 		restaurant.users.add(owner)
-		response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), self.credentials)
+		response = self.client.post(
+		    reverse('webapp:restaurant_update', args=(restaurant.id,)), self.credentials)
 		self.assertRedirects(response, reverse('webapp:detail', args=(1,)))
 
 	def test_view_delete_restaurant(self):
 		""" If there is delete_btn in POST request submission the restaurant object
 		should be deleted and page must be redirected to index page"
 		"""
-		owner = create_owner('Test User','test@example.com', 'testpwd')
+		owner = create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		restaurant = create_restaurant("Test Restaurant")
 		restaurant.users.add(owner)
-		response = self.client.post(reverse('webapp:restaurant_update', args=(restaurant.id,)), {'delete_btn':'delete_btn'})
+		response = self.client.post(reverse('webapp:restaurant_update', args=(
+		    restaurant.id,)), {'delete_btn': 'delete_btn'})
 		self.assertRedirects(response, reverse('webapp:index'))
 
+
 class CuisineCreateViewTests(TestCase):
-	
+
 	def test_cuisine_create_form_pop_up(self):
-		""" When Add cuisine button is pressed popup should appear with 
-		add cuisine form 
+		""" When Add cuisine button is pressed popup should appear with
+		add cuisine form
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		response = self.client.get(reverse('webapp:cuisine_create'))
 		self.assertTemplateUsed(response, 'webapp/popup_form.html')
@@ -285,40 +294,41 @@ class CuisineCreateViewTests(TestCase):
 	def test_cuisine_create_form_with_blank_data(self):
 		""" Cuisine create form should notify the error when blank data is submitted
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		response = self.client.post(reverse('webapp:cuisine_create'), {})
 		self.assertFormError(response, 'form', 'name', 'This field is required.')
-	
+
 	def test_cuisine_create_form_with_valid_data(self):
 		""" Cuisine create form should disappear and notify of cuisine creation
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
-		response = self.client.post(reverse('webapp:cuisine_create'), {'name':'TEST CUISINE'})
+		response = self.client.post(reverse('webapp:cuisine_create'), {
+		                            'name': 'TEST CUISINE'})
 		self.assertEqual(response.status_code, 302)
 		# TODO: self.assertContains(response, 'New Cuisine Created.')
-	
+
+
 class TypeCreateViewTests(TestCase):
-	
-	def test_type_create_form_pop_up(self):
-		""" When Add cuisine button is pressed popup should appear with 
-		add cuisine form 
+    def test_type_create_form_pop_up(self):
+		""" When Add cuisine button is pressed popup should appear with
+		add cuisine form
 		"""
-		create_owner('Test User','test@example.com', 'testpwd')
+		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
 		response = self.client.get(reverse('webapp:type_create'))
 		self.assertTemplateUsed(response, 'webapp/popup_form.html')
-
-	def test_cuisine_create_form_with_blank_data(self):
-		""" Cuisine create form should notify the error when blank data is submitted
-		"""
-		create_owner('Test User','test@example.com', 'testpwd')
-		self.client.login(username='Test User', password='testpwd')
-		response = self.client.post(reverse('webapp:type_create'), {})
-		self.assertFormError(response, 'form', 'name', 'This field is required.')
+    
+    def test_type_create_form_with_blank_data(self):
+        """ Cuisine create form should notify the error when blank data is submitted
+        """
+        create_owner('Test User','test@example.com', 'testpwd')
+        self.client.login(username='Test User', password='testpwd')
+        response = self.client.post(reverse('webapp:type_create'), {})
+        self.assertFormError(response, 'form', 'name', 'This field is required.')
 	
-	def test_cuisine_create_form_with_valid_data(self):
+    def test_type_create_form_with_valid_data(self):
 		""" Cuisine create form should disappear and notify of cuisine creation
 		"""
 		create_owner('Test User','test@example.com', 'testpwd')
@@ -327,6 +337,52 @@ class TypeCreateViewTests(TestCase):
 		self.assertEqual(response.status_code, 302)
 		# TODO: self.assertContains(response, 'New Cuisine Created.')
 
+
+class UserCreateViewTests(TestCase):
+    def test_user_create_view_loads(self):
+        """ GET request to user create view must load the signup form
+        """
+        response = self.client.get(reverse('register_user'))
+        self.assertTemplateUsed(response, 'webapp/registration/signup_form.html')
+
+    def test_owner_create_view_load(self):
+        """ GET request to owner create view must load the signup form
+        """
+        response = self.client.get(reverse('register_owner'))
+        self.assertTemplateUsed(response, 'webapp/registration/signup_form.html')
+
+    def test_user_create_view_valid_data(self):
+        """ POST with valid request must redirect to login page
+        """
+        response = self.client.post(reverse('register_user'), {'username':'test', 'email':'test@example.com', 'password1':'TampereFI', 'password2':'TampereFI'})
+        self.assertRedirects(response, reverse('login'))
+
+    def test_owner_create_view_valid_data(self):
+        """ POST with valid request must redirect to login page
+        """
+        response = self.client.post(reverse('register_owner'), {'username':'test', 'email':'test@example.com', 'password1':'TampereFI', 'password2':'TampereFI'})
+        self.assertRedirects(response, reverse('login'))
+
+
+class UserProfileViewTests(TestCase):
+    
+    def test_user_profile_view_loads(self):
+        """ Profile view must be of the logged in user
+        """
+        owner = create_owner('Test User','test@example.com', 'testpwd')
+        self.client.login(username='Test User', password='testpwd')
+        response = self.client.get(reverse('webapp:profile'))
+        self.assertContains(response, 'Test User')
+    
+    def test_owner_profile_view_loads(self):
+        """ Profile view of owner must load with the list of restaurant they own
+        """
+        owner = create_owner('Test User','test@example.com', 'testpwd')
+        self.client.login(username='Test User', password='testpwd')
+        restaurant = create_restaurant("Test Restaurant")
+        restaurant.users.add(owner)
+        response = self.client.get(reverse('webapp:profile'))
+        self.assertQuerysetEqual(response.context['restaurant_list'], ['<Restaurant: Test Restaurant>'])
 
 # Helper functions
 def create_restaurant(restaurant_name):
