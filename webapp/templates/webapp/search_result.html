@@ -9,4 +9,17 @@
 </div>
 {% endfor %} {% else %}
 <p>No results found</p>
+{% endif %} {% if search_list|length is not 0 %}
+<div class="pagination">
+    <span class="step-links">
+        {% if search_list.has_previous %}
+            <a href="?page={{ search_list.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ search_list.number }} of {{ search_list.paginator.num_pages }}.
+        </span> {% if search_list.has_next %}
+    <a href="?page={{ search_list.next_page_number }}">next</a> {% endif %}
+    </span>
+</div>
 {% endif %} {% endblock %}

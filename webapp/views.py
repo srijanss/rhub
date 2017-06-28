@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from .models import Restaurant, Cuisine, Type
 from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm
@@ -24,9 +25,20 @@ def detail(request, restaurant_id):
 
 def search(request):
     search_text = request.POST['search_field']
-    restaurant_list = Restaurant.objects.filter(Q(name__icontains=search_text) | Q(types__name__icontains=search_text)).distinct()
-    return render(request, 'webapp/search_result.html', {'search_list':restaurant_list})
+    return HttpResponseRedirect(reverse('webapp:search_listing', args=(search_text,)))
 
+def search_listing(request, search_text):
+    search_list = Restaurant.objects.filter(Q(name__icontains=search_text) | Q(types__name__icontains=search_text)).distinct()
+    paginator = Paginator(search_list, 2)
+    page = request.GET.get('page')
+    try:
+        restaurant_list = paginator.page(page)
+    except PageNotAnInteger:
+        restaurant_list = paginator.page(1)
+    except EmptyPage:
+        restaurant_list = paginator.page(paginator.num_pages)
+    return render(request, 'webapp/search_result.html', {'search_list':restaurant_list, 'search_text':search_text})
+    
 @login_required
 @permission_required('webapp.add_restaurant')
 def restaurant_create(request):
