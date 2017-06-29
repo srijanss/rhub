@@ -121,54 +121,122 @@ class DetailViewTests(TestCase):
 
 
 class SearchViewTests(TestCase):
+    def test_search_view_with_get_request(self):
+        """ GET request to search page should redirect to listing page 
+        and show all the listings of restaurants
+        """
+        response = self.client.get(reverse('webapp:search'))
+        self.assertRedirects(response, reverse('webapp:search_listing', args=("all",)))
 
-	def test_no_matching_content(self):
-		""" If search content doesnot match the restaurant name or type
-		or restaurant doesnot exists, appropriate message should be shown
-		"""
-		search_text = "test"
-		response = self.client.post(reverse('webapp:search'), {
-									'search_field': search_text})
-		self.assertEqual(response.status_code, 200)
-		self.assertQuerysetEqual(response.context['search_list'], [])
+    def test_search_view_with_post_request(self):
+        """ POST request to search page should redirect to listing page 
+        and show the lists of restaurant matching the search item
+        """
+        create_restaurant("Test Restaurant")
+        search_text = "test"
+        response = self.client.post(reverse('webapp:search'), {'search_field':search_text})
+        self.assertRedirects(response, reverse('webapp:search_listing', args=(search_text,)))
+    
+    def test_search_view_with_empty_data_request(self):
+        """ POST request to search page with empty string should redirect to listing page 
+        and show the all lists of restaurant
+        """
+        create_restaurant("Test Restaurant")
+        search_text = ""
+        response = self.client.post(reverse('webapp:search'), {'search_field':search_text})
+        self.assertRedirects(response, reverse('webapp:search_listing', args=("all",)))
 
-	def test_name_matching_with_search_text(self):
-		""" If search content match with the restaurant name
-		that restaurant should be shown in the list
-		"""
-		create_restaurant("Test Restaurant")
-		search_text = "test"
-		response = self.client.post(reverse('webapp:search'), {
-									'search_field': search_text})
-		self.assertEqual(response.status_code, 200)
-		self.assertQuerysetEqual(response.context['search_list'], [
-								 '<Restaurant: Test Restaurant>'])
+class SearchViewListingTests(TestCase):
 
-	def test_type_matching_with_search_text(self):
-		""" If search content match with the restaurant type
-		that restaurant should be shown in the list
-		"""
-		restaurant = create_restaurant("Test Restaurant")
-		restaurant.types.create(name="Diner")
-		search_text = "diner"
-		response = self.client.post(reverse('webapp:search'), {
-									'search_field': search_text})
-		self.assertEqual(response.status_code, 200)
-		self.assertQuerysetEqual(response.context['search_list'], [
-								 '<Restaurant: Test Restaurant>'])
+    def test_no_matching_content(self):
+        """ If search content doesnot match the restaurant name or type
+        or restaurant doesnot exists, appropriate message should be shown
+        """
+        search_text = "test"
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], [])
 
-	def test_name_and_type_matching_with_search_text(self):
-		""" If search content matches the restaurant name and type
-		only one result of the matching restaurant should be shown
-		"""
-		restaurant = create_restaurant("Diner Restaurant")
-		restaurant.types.create(name="Diner")
-		search_text = "diner"
-		response = self.client.post(reverse('webapp:search'), {
-									'search_field': search_text})
-		self.assertEqual(response.status_code, 200)
-		self.assertQuerysetEqual(response.context['search_list'], [
-								 '<Restaurant: Diner Restaurant>'])
+    def test_name_matching_with_search_text(self):
+        """ If search content match with the restaurant name
+        that restaurant should be shown in the list
+        """
+        create_restaurant("Test Restaurant")
+        search_text = "test"
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Test Restaurant>'])
+
+    def test_type_matching_with_search_text(self):
+        """ If search content match with the restaurant type
+        that restaurant should be shown in the list
+        """
+        restaurant = create_restaurant("Test Restaurant")
+        restaurant.types.create(name="Diner")
+        search_text = "diner"
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Test Restaurant>'])
+
+    def test_name_and_type_matching_with_search_text(self):
+        """ If search content matches the restaurant name and type
+        only one result of the matching restaurant should be shown
+        """
+        restaurant = create_restaurant("Diner Restaurant")
+        restaurant.types.create(name="Diner")
+        search_text = "diner"
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Diner Restaurant>'])
+
+    def test_search_list_pagination_with_given_pagenumber(self):
+        """ If page number is given as parameter then search list should
+        show that page with the corresponding content
+        """
+        r1 = create_restaurant("Diner Restaurant 1")
+        r2 = create_restaurant("Diner Restaurant 2")
+        r3 = create_restaurant("Diner Restaurant 3")
+        r4 = create_restaurant("Diner Restaurant 4")
+        restaurant_type = Type.objects.create(name="Diner")
+        restaurant_type.restaurant_set.add(r1, r2, r3, r4)
+        search_text = "diner"
+        page = 2
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)) + "?page="+str(page))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Diner Restaurant 3>','<Restaurant: Diner Restaurant 4>'])
+
+
+    def test_search_list_pagination_with_noninteger_pagenumber(self):
+        """ If non integer page number is given as parameter then search list should
+        show the first page with the corresponding content
+        """
+        r1 = create_restaurant("Diner Restaurant 1")
+        r2 = create_restaurant("Diner Restaurant 2")
+        r3 = create_restaurant("Diner Restaurant 3")
+        r4 = create_restaurant("Diner Restaurant 4")
+        restaurant_type = Type.objects.create(name="Diner")
+        restaurant_type.restaurant_set.add(r1, r2, r3, r4)
+        search_text = "diner"
+        page = "two"
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)) + "?page="+str(page))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Diner Restaurant 1>','<Restaurant: Diner Restaurant 2>'])
+
+    def test_search_list_pagination_with_nonexisting_pagenumber(self):
+        """ If non existing page number is given as parameter then search list should
+        show the last page with the corresponding content
+        """
+        r1 = create_restaurant("Diner Restaurant 1")
+        r2 = create_restaurant("Diner Restaurant 2")
+        r3 = create_restaurant("Diner Restaurant 3")
+        r4 = create_restaurant("Diner Restaurant 4")
+        restaurant_type = Type.objects.create(name="Diner")
+        restaurant_type.restaurant_set.add(r1, r2, r3, r4)
+        search_text = "diner"
+        page = 5
+        response = self.client.get(reverse('webapp:search_listing', args=(search_text,)) + "?page="+str(page))
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['search_list'], ['<Restaurant: Diner Restaurant 3>','<Restaurant: Diner Restaurant 4>'])
 
 
 class RestaurantCreateViewTests(TestCase):

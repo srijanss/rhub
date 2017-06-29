@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.utils.datastructures import MultiValueDictKeyError
 
 from .models import Restaurant, Cuisine, Type
 from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm
@@ -24,11 +25,19 @@ def detail(request, restaurant_id):
     return render(request, 'webapp/detail.html', {'restaurant':restaurant})
 
 def search(request):
-    search_text = request.POST['search_field']
+    try:
+        search_text = request.POST['search_field']
+        if search_text.strip() == "":
+            search_text = "all"
+    except MultiValueDictKeyError:
+        search_text = "all"
     return HttpResponseRedirect(reverse('webapp:search_listing', args=(search_text,)))
 
 def search_listing(request, search_text):
-    search_list = Restaurant.objects.filter(Q(name__icontains=search_text) | Q(types__name__icontains=search_text)).distinct()
+    if search_text == "all":
+        search_list = Restaurant.objects.all()
+    else:
+        search_list = Restaurant.objects.filter(Q(name__icontains=search_text) | Q(types__name__icontains=search_text)).distinct()
     paginator = Paginator(search_list, 2)
     page = request.GET.get('page')
     try:
