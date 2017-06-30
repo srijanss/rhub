@@ -6,7 +6,7 @@
         <form action="{% url 'webapp:restaurant_create' %}" method="post">
             {% endif %} {% csrf_token %} {{ form.as_p }}
             <button type="submit" name="save_btn">Save</button> {% if form.instance.pk %}
-            <button type="submit" name="delete_btn">Delete</button>{% endif %}
+            <button type="submit" name="delete_btn" value="delete_btn">Delete</button>{% endif %}
         </form>
 </div>
 {% endblock content %}
