@@ -11,6 +11,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.utils.datastructures import MultiValueDictKeyError
+from django.contrib import messages
 
 from .models import Restaurant, Cuisine, Type
 from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm
@@ -21,8 +22,14 @@ def index(request):
     return render(request, 'webapp/index.html', context)
 
 def detail(request, restaurant_id):
-    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
-    return render(request, 'webapp/detail.html', {'restaurant':restaurant})
+    try:
+        restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
+        return render(request, 'webapp/detail.html', {'restaurant':restaurant})
+    except Http404:
+        messages.set_level(request, messages.DEBUG)
+        messages.debug(request, "Restaurant doesnot exists..")
+        messages.set_level(request, None)
+    return HttpResponseRedirect(reverse('webapp:index'))
 
 def search(request):
     try:
@@ -56,7 +63,10 @@ def restaurant_create(request):
         if form.is_valid():
             restaurant = form.save()             
             request.user.restaurant_set.add(restaurant)
+            messages.success(request, "Restaurant " + restaurant.name + " created successfully!!")
             return HttpResponseRedirect(reverse('webapp:detail', args=(restaurant.id,)))
+        else:
+            messages.error(request, "Restaurant creation Failed...")
     else:
         form = RestaurantForm()
     
@@ -66,17 +76,27 @@ def restaurant_create(request):
 @permission_required('webapp.change_restaurant')
 def restaurant_update(request, restaurant_id):
     if not int(restaurant_id) in [restaurant.id for restaurant in request.user.restaurant_set.all()]:
-        raise Http404('You dont have permission to edit this Restaurant.')
+        # raise Http404('You dont have permission to edit this Restaurant.')
+        messages.set_level(request, messages.DEBUG)
+        messages.debug(request, "You dont have permission to edit this Restaurant")
+        messages.set_level(request, None)
+        return HttpResponseRedirect(reverse('webapp:detail', args=(restaurant_id,)))
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
     if request.method == 'POST':
         form = RestaurantForm(request.POST, instance=restaurant)
         if request.POST.get('delete_btn'):
             restaurant.delete()
+            messages.set_level(request, messages.DEBUG)
+            messages.debug(request, "Restaurant " + restaurant.name + " deleted successfully")
+            messages.set_level(request, None)
             return HttpResponseRedirect(reverse('webapp:index'))
         else:
             if form.is_valid():
-                restaurant = form.save()             
+                restaurant = form.save()
+                messages.success(request, "Restaurant " + restaurant.name + " updated successfully!!")     
                 return HttpResponseRedirect(reverse('webapp:detail', args=(restaurant.id,)))
+            else:
+                messages.error(request, "Validation Error, " + restaurant.name + " Update Failed...")
     else:
         form = RestaurantForm(instance=restaurant)
     
@@ -88,7 +108,10 @@ def handle_popup_form(request, PopUpForm, field):
         form = PopUpForm(request.POST)
         if form.is_valid():
             new_object = form.save()
+            messages.success(request, field + " created successfully!!")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        else:
+            messages.error(request, "Validation Error, " + field + " Creation Failed...")
     else:
         form = PopUpForm()
     
@@ -117,6 +140,7 @@ def signup(request, user_type):
                 set_permissions(grp_obj, 'webapp', 'type' )
                 set_permissions(grp_obj, 'webapp', 'cuisine' )
             new_user.groups.add(grp_obj)
+            messages.success(request, "Registration Successful. Login to your account...")
             return HttpResponseRedirect(reverse('login'))
     else:
         form = SignUpForm()

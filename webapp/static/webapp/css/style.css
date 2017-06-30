@@ -163,3 +163,31 @@ input {
     display: inline;
     margin: auto 30px;
 }
+
+#message {
+    display: block;
+    padding: 10px 95px;
+}
+
+.success {
+    background-color: yellow;
+}
+
+.info {
+    background-color: green;
+}
+
+.debug {
+    background-color: blueviolet;
+}
+
+.error {
+    background-color: red;
+}
+
+.success,
+.info,
+.debug,
+.error {
+    padding: inherit;
+}

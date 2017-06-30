@@ -46,6 +46,11 @@
             </form>
         </div>
         <div class="container">
+            <div id="message">
+                {% if messages %} {% for message in messages %}
+                <p {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message}}</p>
+                {% endfor %} {% endif %}
+            </div>
             {% block content %}{% endblock %}
         </div>
         <footer>
