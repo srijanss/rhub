@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.urls import reverse
 from django.test import TestCase
+from django.contrib.messages import get_messages
 
 import copy
 
@@ -105,10 +106,15 @@ class IndexViewTests(TestCase):
 class DetailViewTests(TestCase):
 
 	def test_no_restaurant(self):
-		""" If restaurant with given id is not found 404 error should be raise
+		""" If restaurant with given id is not found message 
+		Restaurant doesnot exists should be shown to user
 		"""
-		response = self.client.get(reverse('webapp:detail', args=(1,)))
-		self.assertEqual(response.status_code, 404)
+		response = self.client.get(reverse('webapp:detail', args=(1,)), follow=True)
+		messages = response.context['messages']
+		message = ""
+		for m in messages:
+			message = m.message
+		self.assertEqual(message, "Restaurant doesnot exists..")
 
 	def test_with_restaurant(self):
 		""" If restaurant exists restaurant details must shown in detail page
@@ -287,12 +293,17 @@ class RestaurantCreateViewTests(TestCase):
 class RestaurantUpdateViewTests(TestCase):
 
 	def test_no_restaurant(self):
-		""" If restaurant with given id is not found 404 error should be raise
+		""" If restaurant with given id is not found it should show message
+			Restaurant doesnot exists 
 		"""
 		create_owner('Test User', 'test@example.com', 'testpwd')
 		self.client.login(username='Test User', password='testpwd')
-		response = self.client.post(reverse('webapp:restaurant_update', args=(1,)))
-		self.assertEqual(response.status_code, 404)
+		response = self.client.post(reverse('webapp:restaurant_update', args=(1,)), follow=True)
+		messages = response.context['messages']
+		message = ""
+		for m in messages:
+			message = m.message
+		self.assertEqual(message, "Restaurant doesnot exists..")
 
 	def test_view_loads(self):
 		""" View loaded with data related to restaurant should be loaded for GET request
