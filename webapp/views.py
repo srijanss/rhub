@@ -13,8 +13,8 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib import messages
 
-from .models import Restaurant, Cuisine, Type
-from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm
+from .models import Restaurant, Cuisine, Type, Booking
+from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm, BookingForm
 
 def index(request):
     restaurant_list = Restaurant.objects.order_by('-created_at') [:5]
@@ -164,3 +164,21 @@ def set_permissions(grp_obj, app_name, model_name):
 def user_profile(request):
     restaurant_list = request.user.restaurant_set.all()
     return render(request, 'webapp/user_profile.html', {'restaurant_list':restaurant_list})
+
+def booking_create(request, restaurant_id):
+    if request.method == "POST":
+        if not request.user.id:
+            messages.error(request, 'You must Login to make bookings!!')
+            return HttpResponseRedirect(reverse('webapp:booking_create', args=(restaurant_id,)))
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            new_booking = form.save(commit=False)
+            new_booking.user = request.user
+            new_booking.save()
+            messages.success(request, "Booking successful.")
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+    else:
+        form = BookingForm(initial={'restaurant': Restaurant.objects.get(pk=restaurant_id)})
+    context = {'form':form, 'restaurant_id':restaurant_id}
+    return render(request, 'webapp/booking_form.html', context=context)

@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'^restaurant/cuisines/create/$', views.cuisine_create , name='cuisine_create'),
     url(r'^user/profile/$', views.user_profile, name='profile'),
     url(r'^restaurant/search/(?P<search_text>[a-zA-Z]+)/$', views.search_listing, name='search_listing'),
+    url(r'^restaurant/(?P<restaurant_id>[0-9]+)/booking/$', views.booking_create, name='booking_create'),
 ]

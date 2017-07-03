@@ -53,3 +53,17 @@ class Food(models.Model):
 
     def __str__(self):
         return self.name
+
+@python_2_unicode_compatible
+class Booking(models.Model):
+    name = models.CharField(max_length=250)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    booking_date = models.DateTimeField('Time to Book')
+    number_of_people = models.IntegerField()
+    special_message = models.TextField('Special Message', blank=True)
+    created_at = models.DateTimeField('created date', auto_now_add=True)
+    updated_at = models.DateTimeField('last modified', auto_now=True)
+
+    def __str__(self):
+        return self.restaurant.name + ", Time: " + str(self.booking_date)

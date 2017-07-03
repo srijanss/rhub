@@ -6,7 +6,7 @@
     <p>{{ restaurant.description|truncatewords:20 }}
         <a href={% url 'webapp:detail' restaurant.id %}>Read More</a>
     </p>
-    <a class="book_table_link" href="#">Book Table</a>
+    <a class="book_table_link" href={% url 'webapp:booking_create' restaurant.id %}>Book Table</a>
 </div>
 {% endfor %} {% else %}
 <p>No restaurant added</p>

@@ -10,7 +10,7 @@
         <br><i>Telephone: {{ restaurant.telephone }}</i>
         <br><i>Website: {{ restaurant.website }}</i>
     </p>
-    <p><a class="book_table_link" href="#">Book Table</a></p>
+    <p><a class="book_table_link" href={% url 'webapp:booking_create' restaurant.id %}>Book Table</a></p>
 
     {% if 'webapp.change_restaurant' in perms %}
     <p><a class="edit_link" href="{% url 'webapp:restaurant_update' restaurant.id %}">Edit</a></p> {% endif %}

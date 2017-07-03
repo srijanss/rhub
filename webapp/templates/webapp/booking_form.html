@@ -1,0 +1,9 @@
+{% extends "webapp/base.html" %} {% block content %}
+<div class="content_row">
+    <form action={% url 'webapp:booking_create' restaurant_id %} method="post">
+        {% csrf_token %} {{ form.as_p }}
+        <input type="hidden" name="name" value={{ request.path }} />
+        <button type="submit" name="booking_submit_btn" value="booking_submit_btn">Book</button>
+    </form>
+</div>
+{% endblock content %}

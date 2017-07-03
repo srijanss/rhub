@@ -7,7 +7,7 @@ from django.forms import CharField, EmailField
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Restaurant, Type, Cuisine, Food
+from .models import Restaurant, Type, Cuisine, Food, Booking
 
 class MultipleSelectWithPop(SelectMultiple):
     def render(self, name, *args, **kwargs):
@@ -46,3 +46,8 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2',)
+
+class BookingForm(ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['restaurant', 'booking_date', 'number_of_people', 'special_message']
