@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib import messages
+from django.utils import timezone
 
 from .models import Restaurant, Cuisine, Type, Booking
 from .forms import RestaurantForm, CuisineForm, TypeForm, SignUpForm, BookingForm
@@ -162,8 +163,13 @@ def set_permissions(grp_obj, app_name, model_name):
         grp_obj.permissions.add(perms)
 
 def user_profile(request):
-    restaurant_list = request.user.restaurant_set.all()
-    return render(request, 'webapp/user_profile.html', {'restaurant_list':restaurant_list})
+    if request.user.groups.filter(name__icontains='customer'):
+        context_list = request.user.booking_set.all()
+        customer = True
+    else:
+        context_list = request.user.restaurant_set.all()
+        customer = False
+    return render(request, 'webapp/user_profile.html', {'context_list':context_list, 'customer':customer})
 
 def booking_create(request, restaurant_id):
     if request.method == "POST":
@@ -174,6 +180,7 @@ def booking_create(request, restaurant_id):
         if form.is_valid():
             new_booking = form.save(commit=False)
             new_booking.user = request.user
+            new_booking.name = "Booking on " + str(timezone.now())
             new_booking.save()
             messages.success(request, "Booking successful.")
             next = request.POST.get('next', '/')
@@ -182,3 +189,25 @@ def booking_create(request, restaurant_id):
         form = BookingForm(initial={'restaurant': Restaurant.objects.get(pk=restaurant_id)})
     context = {'form':form, 'restaurant_id':restaurant_id}
     return render(request, 'webapp/booking_form.html', context=context)
+
+@login_required
+def booking_update(request, booking_id):
+    booking = get_object_or_404(Booking, pk=booking_id)
+    if request.method == "POST":
+        form = BookingForm(request.POST, instance=booking)
+        if form.is_valid():
+            booking = form.save()
+            messages.success(request, "Booking updated successfully.")
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+    else:
+        form = BookingForm(instance=booking)
+    context = {'form':form, 'restaurant_id':booking.restaurant.id, 'booking_id':booking_id}
+    return render(request, 'webapp/booking_form.html', context=context)
+
+@login_required
+def booking_delete(request, booking_id):
+    booking = get_object_or_404(Booking, pk=booking_id)
+    booking.delete() 
+    messages.debug(request, "Booking removed.")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 

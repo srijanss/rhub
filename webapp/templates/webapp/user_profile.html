@@ -1,7 +1,19 @@
 {% extends "webapp/base.html" %} {% block content %}
 <div class="content_row">
     <h1>{{ user.username }}</h1>
-    {% for restaurant in restaurant_list %}
+    {% if customer %} {% for booking in context_list %}
+    <div class="booking_list">
+        <ul>
+            <li>
+                <strong>{{ booking.name }}</strong>
+            </li>
+            <li>
+                <a href={% url 'webapp:booking_update' booking.id %} name="edit_btn">Edit</a>
+                <a href={% url 'webapp:booking_delete' booking.id %} name="delete_btn">Delete</a>
+            </li>
+        </ul>
+    </div>
+    {% endfor %} {% else %} {% for restaurant in context_list %}
     <div class="restaurant_list">
         <ul>
             <li>
@@ -12,6 +24,6 @@
             </li>
         </ul>
     </div>
-    {% endfor %}
+    {% endfor %} {% endif %}
 </div>
 {% endblock content %}

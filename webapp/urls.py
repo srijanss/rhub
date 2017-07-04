@@ -15,4 +15,6 @@ urlpatterns = [
     url(r'^user/profile/$', views.user_profile, name='profile'),
     url(r'^restaurant/search/(?P<search_text>[a-zA-Z]+)/$', views.search_listing, name='search_listing'),
     url(r'^restaurant/(?P<restaurant_id>[0-9]+)/booking/$', views.booking_create, name='booking_create'),
+    url(r'^restaurant/booking/update/(?P<booking_id>[0-9]+)/$', views.booking_update, name='booking_update'),
+    url(r'^restaurant/booking/delete/(?P<booking_id>[0-9]+)/$', views.booking_delete, name='booking_delete'),
 ]

@@ -1,9 +1,18 @@
 {% extends "webapp/base.html" %} {% block content %}
 <div class="content_row">
-    <form action={% url 'webapp:booking_create' restaurant_id %} method="post">
-        {% csrf_token %} {{ form.as_p }}
-        <input type="hidden" name="name" value={{ request.path }} />
-        <button type="submit" name="booking_submit_btn" value="booking_submit_btn">Book</button>
-    </form>
+    {% if form.instance.pk %}
+    <form action={% url 'webapp:booking_update' booking_id %} method="post">
+        {% else %}
+        <form action={% url 'webapp:booking_create' restaurant_id %} method="post">
+            {% endif %} {% csrf_token %} {{ form.as_p }}
+            <input type="hidden" name="name" value={{ request.path }} />
+            <button type="submit" name="booking_submit_btn" value="booking_submit_btn">
+                {% if form.instance.pk %}
+                Update
+                {% else %}
+                Book
+                {% endif %}
+            </button>
+        </form>
 </div>
 {% endblock content %}
