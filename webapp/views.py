@@ -192,22 +192,39 @@ def booking_create(request, restaurant_id):
 
 @login_required
 def booking_update(request, booking_id):
-    booking = get_object_or_404(Booking, pk=booking_id)
-    if request.method == "POST":
-        form = BookingForm(request.POST, instance=booking)
-        if form.is_valid():
-            booking = form.save()
-            messages.success(request, "Booking updated successfully.")
-            next = request.POST.get('next', '/')
-            return HttpResponseRedirect(next)
-    else:
-        form = BookingForm(instance=booking)
-    context = {'form':form, 'restaurant_id':booking.restaurant.id, 'booking_id':booking_id}
-    return render(request, 'webapp/booking_form.html', context=context)
+    try:
+        booking = get_object_or_404(Booking, pk=booking_id)
+        if request.method == "POST":
+            form = BookingForm(request.POST, instance=booking)
+            if form.is_valid():
+                booking = form.save()
+                messages.success(request, "Booking updated successfully.")
+                next = request.POST.get('next', '/')
+                return HttpResponseRedirect(next)
+        else:
+            form = BookingForm(instance=booking)
+        context = {'form':form, 'restaurant_id':booking.restaurant.id, 'booking_id':booking_id}
+        return render(request, 'webapp/booking_form.html', context=context)
+    except Http404:
+        messages.set_level(request, messages.DEBUG)
+        messages.debug(request, "Booking doesnot exists..")
+        messages.set_level(request, None)
+        return HttpResponseRedirect(reverse('webapp:profile'))
+
 
 @login_required
 def booking_delete(request, booking_id):
-    booking = get_object_or_404(Booking, pk=booking_id)
-    booking.delete() 
-    messages.debug(request, "Booking removed.")
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+    try:
+        booking = get_object_or_404(Booking, pk=booking_id)
+    except Http404:
+        messages.set_level(request, messages.DEBUG)
+        messages.debug(request, "Booking doesnot exists..")
+        messages.set_level(request, None)
+    else:
+        booking.delete() 
+        messages.set_level(request, messages.DEBUG)
+        messages.debug(request, "Booking removed.")
+        messages.set_level(request, None)
+    return HttpResponseRedirect(reverse('webapp:profile'))
+        
+    
