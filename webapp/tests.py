@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import datetime
+
 from django.urls import reverse
 from django.test import TestCase
-from django.contrib.messages import get_messages
+from django.utils import timezone
 
 import copy
 
 from django.contrib.auth.models import User, Group
 
-from .models import Restaurant, Type, Cuisine, Food
+from .models import Restaurant, Type, Cuisine, Food, Booking
 from .views import set_permissions
 
 CREDENTIIALS = {
@@ -73,6 +75,18 @@ class FoodModelTests(TestCase):
 		self.assertIs(isinstance(food, Food), True)
 		self.assertEqual(food.__str__(), food.name)
 
+class BookModelTests(TestCase):
+    
+	def test_booking_object_creation(self):
+		""" Booking object created must return restaurant name
+		and booked date and time
+		"""
+		user = User.objects.create_user(username='test')
+		restaurant = create_restaurant('Test Restaurant')
+		booking_date = timezone.now()
+		booking = Booking.objects.create(user=user, restaurant=restaurant, booking_date=booking_date, number_of_people=2)
+		self.assertIs(isinstance(booking, Booking), True)
+		self.assertEqual(booking.__str__(), booking.restaurant.name + ", Time: " + booking_date.strftime('%Y-%m-%d %H:%M:%S'))
 
 class IndexViewTests(TestCase):
 
@@ -444,25 +458,171 @@ class UserCreateViewTests(TestCase):
 
 
 class UserProfileViewTests(TestCase):
-    
-    def test_user_profile_view_loads(self):
-        """ Profile view must be of the logged in user
-        """
-        owner = create_owner('Test User','test@example.com', 'testpwd')
-        self.client.login(username='Test User', password='testpwd')
-        response = self.client.get(reverse('webapp:profile'))
-        self.assertContains(response, 'Test User')
-    
-    def test_owner_profile_view_loads(self):
-        """ Profile view of owner must load with the list of restaurant they own
-        """
-        owner = create_owner('Test User','test@example.com', 'testpwd')
-        self.client.login(username='Test User', password='testpwd')
-        restaurant = create_restaurant("Test Restaurant")
-        restaurant.users.add(owner)
-        response = self.client.get(reverse('webapp:profile'))
-        self.assertQuerysetEqual(response.context['restaurant_list'], ['<Restaurant: Test Restaurant>'])
 
+	def test_user_profile_view_loads(self):
+		""" Profile view must be of the logged in user
+		"""
+		owner = create_owner('Test User','test@example.com', 'testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		response = self.client.get(reverse('webapp:profile'))
+		self.assertContains(response, 'Test User')
+
+	def test_user_profile_view_with_booking_list(self):
+		""" Profile view of user must load with the list of bookings they have made
+		"""
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		group = Group.objects.create(name='customer')
+		user.groups.add(group)
+		self.client.login(username='Test User', password='testpwd')
+		restaurant = create_restaurant("Test Restaurant")
+		booking_date = datetime.datetime.now()
+		booking = Booking.objects.create(user=user, restaurant=restaurant, booking_date=booking_date, number_of_people=2)
+		response = self.client.get(reverse('webapp:profile'))
+		self.assertQuerysetEqual(response.context['context_list'], ['<Booking: Test Restaurant, Time: ' + booking_date.strftime('%Y-%m-%d %H:%M:%S') + '>'])
+
+	def test_owner_profile_view_with_restaurant_list(self):
+		""" Profile view of owner must load with the list of restaurant they own
+		"""
+		owner = create_owner('Test User','test@example.com', 'testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		restaurant = create_restaurant("Test Restaurant")
+		restaurant.users.add(owner)
+		response = self.client.get(reverse('webapp:profile'))
+		self.assertQuerysetEqual(response.context['context_list'], ['<Restaurant: Test Restaurant>'])
+	
+
+class BookingViewTests(TestCase):
+    
+	def test_booking_creation_view_load(self):
+		""" Booking creation view should load with restaurant selected 
+		whose book table button was clicked
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		response = self.client.get(reverse('webapp:booking_create', args=(restaurant.id,)))
+		self.assertTemplateUsed(response, 'webapp/booking_form.html')
+		self.assertEqual(response.context['restaurant_id'], str(restaurant.id))
+
+	def test_booking_creation_view_without_login(self):
+		""" Try to create Booking  without login should should show appropriate
+			message and same booking create form should be displayed 
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking_credentials = {'user':user, 'restaurant':restaurant, 'booking_date':booking_date, 'number_of_people':2}
+		response = self.client.post(reverse('webapp:booking_create', args=(restaurant.id,)), booking_credentials, follow=True)
+		messages = response.context['messages']
+		message = ""
+		for m in messages:
+			message = m.message
+		self.assertEqual(message, 'You must Login to make bookings!!')
+		self.assertRedirects(response, reverse('webapp:booking_create', args=(restaurant.id,)))
+	
+	def test_booking_create_view_with_invalid_data(self):
+		""" Booking update view with invalid data 
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking_credentials = {'user':user.id, 'restaurant':restaurant.id, 'booking_date':booking_date, 'number_of_people':'two', 'next':reverse('webapp:profile')}
+		response = self.client.post(reverse('webapp:booking_create', args=(restaurant.id,)), booking_credentials, follow=True)
+		self.assertFormError(response, 'form', 'number_of_people', 'Enter a whole number.')
+
+	def test_booking_creation_view_with_login(self):
+		""" Booking creation by logged in user should be redirected to 
+			next url given in the POST reqeust
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking_credentials = {'user':user.id, 'restaurant':restaurant.id, 'booking_date':booking_date, 'number_of_people':2, 'next':reverse('webapp:index')}
+		response = self.client.post(reverse('webapp:booking_create', args=(restaurant.id,)), booking_credentials, follow=True)
+		self.assertRedirects(response, reverse('webapp:index'))
+
+	def test_booking_update_view_with_no_booking_found(self):
+		""" If no booking found message must be shown to indicate that
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		response = self.client.get(reverse('webapp:booking_update', args=(1,)), follow=True)
+		messages = response.context['messages']
+		message = ""
+		for m in messages:
+			message = m.message
+		self.assertEqual(message, 'Booking doesnot exists..')
+
+	def test_booking_update_view_load(self):
+		""" Booking update view should load with restaurant selected 
+		whose book table button was clicked
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking = Booking.objects.create(user=user, restaurant=restaurant, booking_date=booking_date, number_of_people=2)
+		response = self.client.get(reverse('webapp:booking_update', args=(booking.id,)))
+		self.assertTemplateUsed(response, 'webapp/booking_form.html')
+		self.assertEqual(response.context['restaurant_id'], restaurant.id)
+		self.assertEqual(response.context['booking_id'], str(booking.id))
+
+	def test_booking_update_view_with_login(self):
+		""" Booking update by logged in user should be redirected to 
+			next url given in the POST reqeust
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking = Booking.objects.create(user=user, restaurant=restaurant, booking_date=booking_date, number_of_people=2)
+		booking_credentials = {'user':user.id, 'restaurant':restaurant.id, 'booking_date':booking_date, 'number_of_people':3, 'next':reverse('webapp:profile')}
+		response = self.client.post(reverse('webapp:booking_update', args=(booking.id,)), booking_credentials, follow=True)
+		self.assertRedirects(response, reverse('webapp:profile'))
+	
+	def test_booking_update_view_with_invalid_data(self):
+		""" Booking update view with invalid data 
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking = Booking.objects.create(user=user, restaurant=restaurant, booking_date=booking_date, number_of_people=2)
+		booking_credentials = {'user':user.id, 'restaurant':restaurant.id, 'booking_date':booking_date, 'number_of_people':'two', 'next':reverse('webapp:profile')}
+		response = self.client.post(reverse('webapp:booking_update', args=(booking.id,)), booking_credentials)
+		self.assertFormError(response, 'form', 'number_of_people', 'Enter a whole number.')
+	
+	def test_booking_delete_view_when_booking_object_notfound(self):
+		""" Booking delete view should show appropriate message 
+			when trying to delete booking that doesnot exists
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		response = self.client.get(reverse('webapp:booking_delete', args=(1,)), follow=True)
+		messages = response.context['messages']
+		message = ""
+		for m in messages:
+			message = m.message
+		self.assertEqual(message, 'Booking doesnot exists..')
+
+	def test_booking_delete_view(self):
+		""" Booking delete view should delete booking with message
+		"""
+		restaurant = create_restaurant('Test Restauarant')
+		user = User.objects.create_user(username='Test User', password='testpwd')
+		self.client.login(username='Test User', password='testpwd')
+		booking_date = datetime.datetime.now()
+		booking = Booking.objects.create(user=user, restaurant=restaurant, booking_date=booking_date, number_of_people=2)
+		response = self.client.get(reverse('webapp:booking_delete', args=(booking.id,)), follow=True)
+		messages = response.context['messages']
+		message = ""
+		for m in messages:
+			message = m.message
+		self.assertEqual(message, 'Booking removed.')
+		
+	
 # Helper functions
 def create_restaurant(restaurant_name):
 	return Restaurant.objects.create(name=restaurant_name,
