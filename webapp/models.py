@@ -66,4 +66,4 @@ class Booking(models.Model):
     updated_at = models.DateTimeField('last modified', auto_now=True)
 
     def __str__(self):
-        return self.restaurant.name + ", Time: " + str(self.booking_date)
+        return self.restaurant.name + ", Time: " + self.booking_date.strftime('%Y-%m-%d %H:%M:%S')
